@@ -1,0 +1,21 @@
+---
+abstract: 'A Low Calorie DateTime'
+author:
+  - '=over 4'
+distribution_type: module
+generated_by: 'Module::Install version 0.77'
+license: unknown
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
+name: DateTimeX-Lite
+no_index:
+  directory:
+    - inc
+    - t
+requires:
+  Scalar::Util: 0
+  SelfLoader: 0
+  Time::Local: 0
+  perl: 5.8.0
+version: 0.00001
