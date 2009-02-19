@@ -2,6 +2,7 @@
 package DateTimeX::Lite;
 use strict;
 use warnings;
+use Carp ();
 use Scalar::Util qw(blessed);
 use overload ( 'fallback' => 1,
                '-'   => '_subtract_overload',
@@ -318,7 +319,7 @@ sub subtract_duration { return $_[0]->add_duration( $_[1]->inverse ) }
     {
         my ($self, $dur) = @_;
         if (! blessed $dur || !$dur->isa('DateTimeX::Lite::Duration')) {
-            croak("Duration is not a DateTimeX::Lite::Duration object");
+            Carp::croak("Duration is not a DateTimeX::Lite::Duration object");
         }
 
         # simple optimization

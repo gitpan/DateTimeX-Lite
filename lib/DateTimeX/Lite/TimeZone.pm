@@ -8,6 +8,7 @@ BEGIN {
         require DateTimeX::Lite::TimeZone::Catalog;
     }
 }
+use Carp ();
 use DateTimeX::Lite::TimeZone::Floating;
 use DateTimeX::Lite::TimeZone::Local;
 use DateTimeX::Lite::TimeZone::OffsetOnly;

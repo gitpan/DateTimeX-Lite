@@ -8,6 +8,7 @@ use constant NAN          => INFINITY - INFINITY;
 use constant SECONDS_PER_DAY => 86400;
 use constant MAX_NANOSECONDS => 1_000_000_000;  # 1E9 = almost 32 bits
 use constant LOCALE_SKIP => $ENV{DATETIMEX_LITE_LOCALE_SKIP} ? 1 : 0;
+use Carp ();
 use DateTimeX::Lite::Duration;
 use DateTimeX::Lite::Infinite;
 use DateTimeX::Lite::TimeZone;

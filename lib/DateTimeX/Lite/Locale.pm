@@ -1,9 +1,10 @@
-# $Id: /mirror/coderepos/lang/perl/DateTimeX-Lite/trunk/lib/DateTimeX/Lite/Locale.pm 100666 2009-02-14T07:34:37.083851Z daisuke  $
+# $Id: /mirror/coderepos/lang/perl/DateTimeX-Lite/trunk/lib/DateTimeX/Lite/Locale.pm 100700 2009-02-15T06:35:52.938253Z daisuke  $
 
 package DateTimeX::Lite::Locale;
 use strict;
 use warnings;
 use File::Spec;
+use Carp ();
 
 our %CachedLocales;
 our %Aliases;

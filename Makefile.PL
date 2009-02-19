@@ -12,6 +12,7 @@ all_from('lib/DateTimeX/Lite.pm');
 requires 'SelfLoader'; 
 requires 'Scalar::Util';
 requires 'Time::Local';
+requires 'List::MoreUtils';
 if ($^O eq 'MSWin32') {
     requires 'Win32::TieRegistry';
 }
@@ -57,6 +58,7 @@ profile: pure_all
 EOM
 postamble $postamble;
 
+no_index directory => 'tools';
 tests 't/*.t t/*/*.t';
 WriteAll;
 

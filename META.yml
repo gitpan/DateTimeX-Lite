@@ -3,7 +3,7 @@ abstract: 'A Low Calorie DateTime'
 author:
   - '=over 4'
 distribution_type: module
-generated_by: 'Module::Install version 0.77'
+generated_by: 'Module::Install version 0.79'
 license: unknown
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
@@ -13,7 +13,9 @@ no_index:
   directory:
     - inc
     - t
+    - tools
 requires:
+  List::MoreUtils: 0
   Scalar::Util: 0
   SelfLoader: 0
   Time::Local: 0
