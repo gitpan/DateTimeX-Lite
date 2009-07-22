@@ -1,4 +1,4 @@
-# $Id: /mirror/coderepos/lang/perl/DateTimeX-Lite/trunk/lib/DateTimeX/Lite/Locale.pm 100700 2009-02-15T06:35:52.938253Z daisuke  $
+# $Id: Locale.pm 30361 2009-02-20 08:13:39Z tokuhirom $
 
 package DateTimeX::Lite::Locale;
 use strict;
@@ -10,7 +10,8 @@ our %CachedLocales;
 our %Aliases;
 
 {
-    %Aliases = %{ do 'DateTimeX/Lite/Locale/Aliases.dat'};
+    my $aliases = do 'DateTimeX/Lite/Locale/Aliases.dat' or die "cannot load alias database";
+    %Aliases = %$aliases;
 }
 
 sub _load_locale {
@@ -480,10 +481,10 @@ _format_for_yyyyMMMM
     }
 }
 
-sub month_name { $_[0]->month_format_wide()->[ $_[1]->month_0 ] }
-sub month_abbreviation { $_[0]->month_format_abbreviated()->[ $_[1]->month_0 ] }
-sub day_name { $_[0]->day_format_wide()->[ $_[1]->day_of_week_0 ] }
-sub day_abbreviation { $_[0]->day_format_abbreviated->[ $_[1]->day_of_week_0 ] }
+sub month_name { $_[0]->month_format_wide()->[ $_[1]->month - 1 ] }
+sub month_abbreviation { $_[0]->month_format_abbreviated()->[ $_[1]->month - 1 ] }
+sub day_name { $_[0]->day_format_wide()->[ $_[1]->day_of_week - 1 ] }
+sub day_abbreviation { $_[0]->day_format_abbreviated->[ $_[1]->day_of_week - 1 ] }
 
 
 sub add_aliases {

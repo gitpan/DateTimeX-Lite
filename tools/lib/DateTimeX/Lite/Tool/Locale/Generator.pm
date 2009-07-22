@@ -1,5 +1,3 @@
-# $Id: /mirror/coderepos/lang/perl/DateTimeX-Lite/trunk/tools/lib/DateTimeX/Lite/Tool/Locale/Generator.pm 100663 2009-02-14T07:21:12.411898Z daisuke  $
-
 package DateTimeX::Lite::Tool::Locale::Generator;
 use utf8;
 use Moose;
@@ -135,7 +133,7 @@ EOF
 
     %Aliases = ( %Aliases, %{ DateTimeX::Lite::Tool::Locale::LDML->Aliases() } );
     { # generate Aliases.pm
-        open(my $fh, '>', Path::Class::File->new( qw(lib DateTimeX Lite Locale Aliases.dat) ) ) or die "Could not open file: $!";
+        open(my $fh, '>', Path::Class::File->new( qw(dat DateTimeX Lite Locale Aliases.dat) ) ) or die "Could not open file: $!";
         print $fh Data::Dumper::Dumper(\%Aliases);
         close($fh);
     }
@@ -149,7 +147,7 @@ sub iso639_2_to_3 {
 sub generate_dat_file {
     my ($self, $ldml) = @_;
 
-    my $dat_file = Path::Class::File->new( qw( lib DateTimeX Lite Locale ), $ldml->id() . q{.dat} );
+    my $dat_file = Path::Class::File->new( qw( share DateTimeX Lite Locale ), $ldml->id() . q{.dat} );
 #    write_to_manifest($dat_file);
 
     my $parent = $dat_file->parent;
@@ -208,7 +206,7 @@ sub generate_data {
     $data{id} = $ldml->id;
 
     foreach my $attr ( sort { $a->name() cmp $b->name() }
-                       DateTimeX::Lite::Tool::Locale::LDML->meta()->compute_all_applicable_attributes() )
+                       DateTimeX::Lite::Tool::Locale::LDML->meta()->get_all_attributes() )
     {
         next unless $attr->name() =~
             /^(?:day_|month_|quarter_|am_pm|era_|date_|time_|datetime_|first_day_)/;

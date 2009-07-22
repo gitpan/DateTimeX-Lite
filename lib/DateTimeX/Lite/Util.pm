@@ -1,4 +1,4 @@
-# $Id$
+# $Id: Util.pm 27589 2008-12-29 23:51:35Z daisuke $
 
 package DateTimeX::Lite::Util;
 use strict;

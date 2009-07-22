@@ -2,8 +2,19 @@
 abstract: 'A Low Calorie DateTime'
 author:
   - '=over 4'
+build_requires:
+  ExtUtils::MakeMaker: 6.42
+  File::Basename: 0
+  File::Copy: 0
+  File::Copy::Recursive: 0
+  File::Find: 0
+  File::Path: 0
+  File::Remove: 0
+  Test::More: 0.81
+configure_requires:
+  ExtUtils::MakeMaker: 6.42
 distribution_type: module
-generated_by: 'Module::Install version 0.79'
+generated_by: 'Module::Install version 0.91'
 license: unknown
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
@@ -12,6 +23,7 @@ name: DateTimeX-Lite
 no_index:
   directory:
     - inc
+    - share
     - t
     - tools
 requires:

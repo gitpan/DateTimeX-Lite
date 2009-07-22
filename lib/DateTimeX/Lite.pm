@@ -16,7 +16,6 @@ use DateTimeX::Lite::LeapSecond;
 use DateTimeX::Lite::Locale;
 use DateTimeX::Lite::Util;
 use Scalar::Util qw(blessed);
-use Time::Local qw( timegm_nocheck );
 
 our $VERSION = '0.00001';
 
@@ -435,8 +434,6 @@ sub ce_year {
     my $year = $_[0]->{local_c}{year};
     return $year <= 0 ? $year - 1 : $year
 }
-sub month_0 { $_[0]->{local_c}{month} - 1 }
-sub mon_0 { goto &month_0 };
 
 sub era_name { $_[0]->{locale}->era_wide->[ $_[0]->_era_index() ] }
 
@@ -454,30 +451,20 @@ sub year_with_christian_era { (abs $_[0]->ce_year) . $_[0]->christian_era }
 sub year_with_secular_era   { (abs $_[0]->ce_year) . $_[0]->secular_era }
 
 
-sub month_name { $_[0]->{locale}->month_format_wide->[ $_[0]->month_0() ] }
+sub month_name { $_[0]->{locale}->month_format_wide->[ $_[0]->month() - 1] }
 
-sub month_abbr { $_[0]->{locale}->month_format_abbreviated->[ $_[0]->month_0() ] }
+sub month_abbr { $_[0]->{locale}->month_format_abbreviated->[ $_[0]->month() - 1] }
 
 sub day_of_month { goto &day };
 sub mday { goto &day };
 sub weekday_of_month { use integer; ( ( $_[0]->day - 1 ) / 7 ) + 1 }
 
-sub quarter_name { $_[0]->{locale}->quarter_format_wide->[ $_[0]->quarter_0() ] }
-sub quarter_abbr { $_[0]->{locale}->quarter_format_abbreviated->[ $_[0]->quarter_0() ] }
-
-sub quarter_0 { $_[0]->{local_c}{quarter} - 1 }
-
-sub day_of_month_0 { $_[0]->{local_c}{day} - 1 }
-*day_0  = \&day_of_month_0;
-*mday_0 = \&day_of_month_0;
+sub quarter_name { $_[0]->{locale}->quarter_format_wide->[ $_[0]->quarter() - 1] }
+sub quarter_abbr { $_[0]->{locale}->quarter_format_abbreviated->[ $_[0]->quarter() - 1] }
 
 sub day_of_week { $_[0]->{local_c}{day_of_week} }
 *wday = \&day_of_week;
 *dow  = \&day_of_week;
-
-sub day_of_week_0 { $_[0]->{local_c}{day_of_week} - 1 }
-*wday_0 = \&day_of_week_0;
-*dow_0  = \&day_of_week_0;
 
 sub local_day_of_week
 {
@@ -496,27 +483,20 @@ sub local_day_of_week
 sub hour_1 { $_[0]->{local_c}{hour} == 0 ? 24 : $_[0]->{local_c}{hour} }
 
 sub hour_12   { my $h = $_[0]->hour % 12; return $h ? $h : 12 }
-sub hour_12_0 { $_[0]->hour % 12 }
 
 sub min { goto &minute };
 
 sub sec { goto &second };
 
-sub day_name { $_[0]->{locale}->day_format_wide->[ $_[0]->day_of_week_0() ] }
+sub day_name { $_[0]->{locale}->day_format_wide->[ $_[0]->day_of_week() - 1 ] }
 
-sub day_abbr { $_[0]->{locale}->day_format_abbreviated->[ $_[0]->day_of_week_0() ] }
+sub day_abbr { $_[0]->{locale}->day_format_abbreviated->[ $_[0]->day_of_week() - 1] }
 
 sub day_of_quarter { $_[0]->{local_c}{day_of_quarter} }
 *doq = \&day_of_quarter;
 
-sub day_of_quarter_0 { $_[0]->day_of_quarter - 1 }
-*doq_0 = \&day_of_quarter_0;
-
 sub day_of_year { $_[0]->{local_c}{day_of_year} }
 *doy = \&day_of_year;
-
-sub day_of_year_0 { $_[0]->{local_c}{day_of_year} - 1 }
-*doy_0 = \&day_of_year_0;
 
 sub am_or_pm { $_[0]->{locale}->am_pm_abbreviated->[ $_[0]->hour() < 12 ? 0 : 1 ] }
 
@@ -791,11 +771,12 @@ sub epoch
     return $self->{utc_c}{epoch}
         if exists $self->{utc_c}{epoch};
 
+    require Time::Local;
     my ( $year, $month, $day ) = $self->_utc_ymd;
     my @hms = $self->_utc_hms;
 
     $self->{utc_c}{epoch} =
-        timegm_nocheck( ( reverse @hms ),
+        Time::Local::timegm_nocheck( ( reverse @hms ),
                         $day,
                         $month - 1,
                         $year,
@@ -955,7 +936,7 @@ DateTimeX::Lite - A Low Calorie DateTime
 
     # Arithmetic doesn't come with DateTimeX::Lite by default
     use DateTimeX::Lite qw(Arithmetic);
-    $dt->add( DateTime::Liate::Duration->new(days => 5) );
+    $dt->add( DateTimeX::Lite::Duration->new(days => 5) );
 
     # Strftime doesn't come with DateTimeX::Lite by default
     use DateTimeX::Lite qw(Strftime);
@@ -963,9 +944,11 @@ DateTimeX::Lite - A Low Calorie DateTime
 
 =head1 DESCRIPTION
 
-This is a lightweight version of DateTime.pm, which requires no XS, and aims to be light(er) than the original, for a given subset of the problems that the original DateTime.pm can solve. The idea is to encourage light users to use DateTime compatible API, while adapting to realistic environments (such as people without access to C compilers, people on rental servers who can't install modules, people who needs to convince pointy-haired bosses that they're not sacrificing performance), so later when they find engineering freedom, they can switch back to the more reliable DateTime.pm.
+This is a lightweight version of DateTime.pm, which requires no XS, and aims to be light(er) than the original, for a given B<subset> of the problems that the original DateTime.pm can solve.
 
-Please make no mistake: THIS IS NOT A REPLACEMENT FOR Datetime.pm. I will try to keep up with DateTime.pm, but DateTime.pm is the referece implementation. This is just stripped down version.
+The idea is to encourage light users to use DateTime compatible API, while adapting to realistic environments (such as people without access to C compilers, people on rental servers who can't install modules, people who needs to convince pointy-haired bosses that they're not sacrificing performance), so later when they find engineering freedom, they can switch back to the more reliable DateTime.pm.
+
+Please make no mistake: B<THIS IS NOT A REPLACEMENT FOR Datetime.pm>. I will try to keep up with DateTime.pm, but DateTime.pm is the referece implementation. This is just stripped down version.
 
 Please also note that internally, this module is a complete rip-off of the original DateTime.pm module. The author simply copied and pasted about 90% of the code, tweaked it and repackaged it. All credits go to the original DateTime.pm's authors.
 
@@ -1010,7 +993,7 @@ While given all of the above, we would like to leave a way for users to easily (
 
 =head1 COMPATIBILITY WITH DateTime.pm
 
-DateTimeX::Lite does not intend to be a drop-in replacement for DateTime.pm. 
+As stated elsewhere, DateTimeX::Lite does not intend to be a drop-in replacement for DateTime.pm. 
 
 You should not expect other DateTime::* modules (such as Format and Calendar) to work with it. It might, but we won't guarantee it. 
 
@@ -1018,7 +1001,7 @@ We feel that if you use the extended features of the DateTime family, you should
 
 =head2 NOTABLE DIFFERENCES
 
-As stated above, DateTimeX::Lite tries to be as compatible as possible with DateTime.pm, but there are a few places it deliberately changed from DateTime.pm. Some notable differences from DateTime.pm are as follows
+DateTimeX::Lite tries to be as compatible as possible with DateTime.pm, but there are a few places it deliberately changed from DateTime.pm. Some notable differences from DateTime.pm are as follows
 
 =over 4
 
@@ -1044,9 +1027,9 @@ and change them to
 
     DateTimeX::Lite::TimeZone->load( name => 'Asia/Tokyo' );
 
-Singletons are okay, they serve a particular purpose. But besides being a memory hog of relative low benefit, I've had claims from users questioning the benefit of timezones and locales when they saw that those two distributions installed hundreds of singetong classes.
+Singletons are okay, they serve a particular purpose. But besides being a memory hog of relative low benefit, I've had claims from users questioning the benefit of timezones and locales when they saw that those two distributions installed hundreds of singleton classes.
 
-With this version, the objects are mostly the just regular objects, and the exact definition for each timezone/locale is stored in data files. (TODO: They can be located anywhere DateTimeX::Lite can find them)
+With this version, the objects are just regular objects, and the exact definition for each timezone/locale is stored in data files. (TODO: They can be located anywhere DateTimeX::Lite can find them)
 
 TODO: We want to make it easy to pick and choose which locales/timezones to be available -- DateTime::TimeZone and Locale comes with the full-set, and normally we don't need this feature. For example, I only use Asia/Tokyo and UTC time zones for my dayjob. When we ask casual users to install a datetime package, we do not want to overwhelm then with 100+ timezones and locales.
 

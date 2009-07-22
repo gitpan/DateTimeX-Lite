@@ -3,6 +3,7 @@
 use strict;
 
 use lib './lib';
+use lib './share';
 
 BEGIN {
     $ENV{DATETIMEX_LITE_LOCALE_SKIP} = 1;
@@ -230,7 +231,7 @@ EOF
         my @name_pieces = split /\//, $outfile1;
         my $filename = (pop @name_pieces) . '.dat';
 
-        my $outdir = File::Spec->catdir( qw( lib DateTimeX Lite TimeZone ),
+        my $outdir = File::Spec->catdir( qw( share DateTimeX Lite TimeZone ),
                                          @dir, @name_pieces  );
 
         mkpath( $outdir, 1, 0755 );
