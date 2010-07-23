@@ -2,31 +2,41 @@ package DateTimeX::Lite;
 use strict;
 use warnings;
 use 5.008;
-use constant INFINITY     =>      (9 ** 9 ** 9);
-use constant NEG_INFINITY => -1 * (9 ** 9 ** 9);
-use constant NAN          => INFINITY - INFINITY;
-use constant SECONDS_PER_DAY => 86400;
-use constant MAX_NANOSECONDS => 1_000_000_000;  # 1E9 = almost 32 bits
-use constant LOCALE_SKIP => $ENV{DATETIMEX_LITE_LOCALE_SKIP} ? 1 : 0;
+use constant +{
+    INFINITY        =>      (9 ** 9 ** 9),
+    NEG_INFINITY    => -1 * (9 ** 9 ** 9),
+    SECONDS_PER_DAY => 86400,
+    MAX_NANOSECONDS => 1_000_000_000,  # 1E9 = almost 32 bits
+    LOCALE_SKIP     => $ENV{DATETIMEX_LITE_LOCALE_SKIP} ? 1 : 0,
+};
+
+use constant NAN    => INFINITY - INFINITY;
+
+
 use Carp ();
 use DateTimeX::Lite::Duration;
 use DateTimeX::Lite::Infinite;
 use DateTimeX::Lite::TimeZone;
 use DateTimeX::Lite::LeapSecond;
-use DateTimeX::Lite::Locale;
 use DateTimeX::Lite::Util;
 use Scalar::Util qw(blessed);
 
+BEGIN {
+    if (LOCALE_SKIP) {
+        warn "We're skipping locale handling. You shouldn't be doing this unless you're generating locale data";
+    } else {
+        require DateTimeX::Lite::Locale;
+    }
+}
 our $VERSION = '0.00001';
 
-use overload (
-    fallback => 1,
-    '<=>' => '_compare_overload',
-    'cmp' => '_compare_overload',
-    '""'  => '_stringify_overload',
-    'eq'  => '_string_equals_overload',
-    'ne'  => '_string_not_equals_overload',
-);
+BEGIN {
+    my @local_c_comp = qw(year month day hour minute second quarter);
+    foreach my $comp (@local_c_comp) {
+        no strict 'refs';
+        *{$comp} = sub { $_[0]->{local_c}{$comp} };
+    }
+}
 
 our $DefaultLocale = 'en_US';
 
@@ -37,16 +47,6 @@ sub import {
         die "DateTimeX::Lite failed to load $component component: $@" if $@;
     }
 }
-
-{
-    my @local_c_comp = qw(year month day hour minute second quarter);
-    foreach my $comp (@local_c_comp) {
-        no strict 'refs';
-        *{$comp} = sub { $_[0]->{local_c}{$comp} };
-    }
-}
-
-
 
 sub utc_rd_values { @{ $_[0] }{ 'utc_rd_days', 'utc_rd_secs', 'rd_nanosecs' } }
 sub local_rd_values { @{ $_[0] }{ 'local_rd_days', 'local_rd_secs', 'rd_nanosecs' } }
@@ -74,10 +74,7 @@ sub jd
 
 sub mjd { $_[0]->jd - 2_400_000.5 }
 
-
-# XXX Prime candidate for SelfLoading
 sub clone { bless { %{ $_[0] } }, ref $_[0] }
-# XXX
 
 sub to_datetime {
     eval {
@@ -376,38 +373,6 @@ sub last_day_of_month {
     }
 
     return $class->new(%p, day => DateTimeX::Lite::Util::month_length($p{year}, $p{month}));
-}
-
-# These can't go to SelfLoader section, as it needs to be present when 
-# overload.pm attempts to look for it
-sub _stringify_overload {
-    my $self = shift;
-
-    return $self->iso8601 unless $self->{formatter};
-    return $self->{formatter}->format_datetime($self);
-}
-
-sub _compare_overload
-{
-    # note: $_[1]->compare( $_[0] ) is an error when $_[1] is not a
-    # DateTime (such as the INFINITY value)
-    return $_[2] ? - $_[0]->compare( $_[1] ) : $_[0]->compare( $_[1] );
-}
-
-sub _string_equals_overload {
-    my ( $class, $dt1, $dt2 ) = ref $_[0] ? ( undef, @_ ) : @_;
-
-    return unless(
-        blessed $dt1 && $dt1->can('utc_rd_values') &&
-        blessed $dt2 && $dt2->can('utc_rd_values')
-    );
-
-    $class ||= ref $dt1;
-    return ! $class->compare( $dt1, $dt2 );
-}
-
-sub _string_not_equals_overload {
-    return ! _string_equals_overload(@_);
 }
 
 sub offset                     { $_[0]->{tz}->offset_for_datetime( $_[0] ) }
@@ -942,6 +907,18 @@ DateTimeX::Lite - A Low Calorie DateTime
     use DateTimeX::Lite qw(Strftime);
     $dt->strftime('%Y %m %d');
 
+    # ZeroBase accessors doesn't come with DateTimeX::Lite by default
+    use DateTimeX::Lite qw(ZeroBase);
+    $dt->month_0;
+
+    # Overloading is disabled by default
+    use DateTimeX::Lite qw(Overload);
+
+    print "the date is $dt\n";
+    if ($dt1 < $dt2) {
+        print "dt1 is less than dt2\n";
+    }
+
 =head1 DESCRIPTION
 
 This is a lightweight version of DateTime.pm, which requires no XS, and aims to be light(er) than the original, for a given B<subset> of the problems that the original DateTime.pm can solve.
@@ -964,7 +941,7 @@ In particular, I'm thinking of people who wants to simply grab a date, maybe do 
 
 =item (2) Target the newbies who are afraid of XS code. 
 
-Let's face it, /we/ the developers know how to deal with XS. But we can't expect that out of everybody.
+Let's face it, /we/ the developers know how to deal with XS. But we can't expect that out of everybody. DateTime.pm doesn't require XS, but to get decent performance it's sort of a requirement. We do our best to get there without XS.
 
 =item (3) Get better performance.
 
@@ -1011,9 +988,19 @@ For example, A lot of times you don't even need to do date time arithmetic. Thes
 
     use DateTimeX::Lite qw(Arithmetic);
 
-Also, strftime() imposes a lot of code on DateTime. So if ymd(), iso8601() or the like is sufficient, it would be best not to load it. To load, include "Strftime" in the use line.
+Similarly, strftime() imposes a lot of code on DateTime. So if ymd(), iso8601() or the like is sufficient, it would be best not to load it. To load, include "Strftime" in the use line.
 
     use DateTimeX::Lite qw(Strftime);
+
+Zero-based accessors are also taken out of the core DateTimeX::Lite code.
+
+    use DateTimeX::Lite qw(ZeroBase);
+
+Overload operators are also taken out. If you want to automatically compare or
+stringify two DateTimeX::Lite objects using standard operators, you need to
+include Overload:
+
+    use DateTimeX::Lite qw(Overload);
 
 =item DateTimeX::Lite::TimeZone and DateTimeX::Lite::Locale
 

@@ -5,16 +5,17 @@ inc/Module/Install/Can.pm
 inc/Module/Install/Fetch.pm
 inc/Module/Install/Makefile.pm
 inc/Module/Install/Metadata.pm
+inc/Module/Install/Share.pm
 inc/Module/Install/Win32.pm
 inc/Module/Install/WriteAll.pm
 lib/DateTimeX/Lite.pm
-lib/DateTimeX/Lite/.Locale.pm.swp
 lib/DateTimeX/Lite/Arithmetic.pm
 lib/DateTimeX/Lite/Duration.pm
 lib/DateTimeX/Lite/Infinite.pm
 lib/DateTimeX/Lite/LeapSecond.pm
 lib/DateTimeX/Lite/Locale.pm
 lib/DateTimeX/Lite/OlsonDB.pm
+lib/DateTimeX/Lite/Overload.pm
 lib/DateTimeX/Lite/Strftime.pm
 lib/DateTimeX/Lite/TimeZone.pm
 lib/DateTimeX/Lite/TimeZone/Catalog.pm
@@ -26,6 +27,7 @@ lib/DateTimeX/Lite/TimeZone/Local/Win32.pm
 lib/DateTimeX/Lite/TimeZone/OffsetOnly.pm
 lib/DateTimeX/Lite/TimeZone/UTC.pm
 lib/DateTimeX/Lite/Util.pm
+lib/DateTimeX/Lite/ZeroBase.pm
 Makefile.PL
 MANIFEST
 META.yml
@@ -551,6 +553,7 @@ share/DateTimeX/Lite/TimeZone/America/Aruba.dat
 share/DateTimeX/Lite/TimeZone/America/Asuncion.dat
 share/DateTimeX/Lite/TimeZone/America/Atikokan.dat
 share/DateTimeX/Lite/TimeZone/America/Bahia.dat
+share/DateTimeX/Lite/TimeZone/America/Bahia_Banderas.dat
 share/DateTimeX/Lite/TimeZone/America/Barbados.dat
 share/DateTimeX/Lite/TimeZone/America/Belem.dat
 share/DateTimeX/Lite/TimeZone/America/Belize.dat
@@ -612,6 +615,7 @@ share/DateTimeX/Lite/TimeZone/America/Maceio.dat
 share/DateTimeX/Lite/TimeZone/America/Managua.dat
 share/DateTimeX/Lite/TimeZone/America/Manaus.dat
 share/DateTimeX/Lite/TimeZone/America/Martinique.dat
+share/DateTimeX/Lite/TimeZone/America/Matamoros.dat
 share/DateTimeX/Lite/TimeZone/America/Mazatlan.dat
 share/DateTimeX/Lite/TimeZone/America/Menominee.dat
 share/DateTimeX/Lite/TimeZone/America/Merida.dat
@@ -629,6 +633,7 @@ share/DateTimeX/Lite/TimeZone/America/Nome.dat
 share/DateTimeX/Lite/TimeZone/America/Noronha.dat
 share/DateTimeX/Lite/TimeZone/America/North_Dakota/Center.dat
 share/DateTimeX/Lite/TimeZone/America/North_Dakota/New_Salem.dat
+share/DateTimeX/Lite/TimeZone/America/Ojinaga.dat
 share/DateTimeX/Lite/TimeZone/America/Panama.dat
 share/DateTimeX/Lite/TimeZone/America/Pangnirtung.dat
 share/DateTimeX/Lite/TimeZone/America/Paramaribo.dat
@@ -643,6 +648,7 @@ share/DateTimeX/Lite/TimeZone/America/Recife.dat
 share/DateTimeX/Lite/TimeZone/America/Regina.dat
 share/DateTimeX/Lite/TimeZone/America/Resolute.dat
 share/DateTimeX/Lite/TimeZone/America/Rio_Branco.dat
+share/DateTimeX/Lite/TimeZone/America/Santa_Isabel.dat
 share/DateTimeX/Lite/TimeZone/America/Santarem.dat
 share/DateTimeX/Lite/TimeZone/America/Santiago.dat
 share/DateTimeX/Lite/TimeZone/America/Santo_Domingo.dat
@@ -668,6 +674,7 @@ share/DateTimeX/Lite/TimeZone/America/Yellowknife.dat
 share/DateTimeX/Lite/TimeZone/Antarctica/Casey.dat
 share/DateTimeX/Lite/TimeZone/Antarctica/Davis.dat
 share/DateTimeX/Lite/TimeZone/Antarctica/DumontDUrville.dat
+share/DateTimeX/Lite/TimeZone/Antarctica/Macquarie.dat
 share/DateTimeX/Lite/TimeZone/Antarctica/Mawson.dat
 share/DateTimeX/Lite/TimeZone/Antarctica/McMurdo.dat
 share/DateTimeX/Lite/TimeZone/Antarctica/Palmer.dat
@@ -721,6 +728,7 @@ share/DateTimeX/Lite/TimeZone/Asia/Makassar.dat
 share/DateTimeX/Lite/TimeZone/Asia/Manila.dat
 share/DateTimeX/Lite/TimeZone/Asia/Muscat.dat
 share/DateTimeX/Lite/TimeZone/Asia/Nicosia.dat
+share/DateTimeX/Lite/TimeZone/Asia/Novokuznetsk.dat
 share/DateTimeX/Lite/TimeZone/Asia/Novosibirsk.dat
 share/DateTimeX/Lite/TimeZone/Asia/Omsk.dat
 share/DateTimeX/Lite/TimeZone/Asia/Oral.dat
@@ -944,6 +952,7 @@ t/timezone/16has-dst-changes.t
 t/timezone/17special-names.t
 t/timezone/19local-win32.t
 TODO
+tools/benchmark/load_memory.pl
 tools/benchmark/load_times.pl
 tools/benchmark/simple_create.pl
 tools/benchmark/thread_safety.pl
