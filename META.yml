@@ -4,12 +4,6 @@ author:
   - '=over 4'
 build_requires:
   ExtUtils::MakeMaker: 6.42
-  File::Basename: 0
-  File::Copy: 0
-  File::Copy::Recursive: 0
-  File::Find: 0
-  File::Path: 0
-  File::Remove: 0
   Test::More: 0.81
 configure_requires:
   ExtUtils::MakeMaker: 6.42
@@ -32,4 +26,4 @@ requires:
   SelfLoader: 0
   Time::Local: 0
   perl: 5.8.0
-version: 0.00001
+version: 0.00002
