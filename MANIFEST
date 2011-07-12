@@ -9,6 +9,7 @@ inc/Module/Install/Share.pm
 inc/Module/Install/Win32.pm
 inc/Module/Install/WriteAll.pm
 lib/DateTimeX/Lite.pm
+lib/DateTimeX/Lite/Aliases.pm
 lib/DateTimeX/Lite/Arithmetic.pm
 lib/DateTimeX/Lite/Duration.pm
 lib/DateTimeX/Lite/Infinite.pm

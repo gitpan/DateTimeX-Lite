@@ -12,7 +12,6 @@ use constant +{
 
 use constant NAN    => INFINITY - INFINITY;
 
-
 use Carp ();
 use DateTimeX::Lite::Duration;
 use DateTimeX::Lite::Infinite;
@@ -28,7 +27,7 @@ BEGIN {
         require DateTimeX::Lite::Locale;
     }
 }
-our $VERSION = '0.00003';
+our $VERSION = '0.00004';
 
 BEGIN {
     my @local_c_comp = qw(year month day hour minute second quarter);
@@ -379,7 +378,6 @@ sub offset                     { $_[0]->{tz}->offset_for_datetime( $_[0] ) }
 sub _offset_for_local_datetime { $_[0]->{tz}->offset_for_local_datetime( $_[0] ) }
 
 
-sub mon { goto &month }
 sub nanosecond { $_[0]->{rd_nanosecs} }
 sub fractional_second { $_[0]->second + $_[0]->nanosecond / MAX_NANOSECONDS }
 
@@ -403,8 +401,6 @@ sub ce_year {
 sub era_name { $_[0]->{locale}->era_wide->[ $_[0]->_era_index() ] }
 
 sub era_abbr { $_[0]->{locale}->era_abbreviated->[ $_[0]->_era_index() ] }
-# deprecated
-sub era { goto \&era_abbr };
 
 sub _era_index { $_[0]->{local_c}{year} <= 0 ? 0 : 1 }
 
@@ -420,16 +416,12 @@ sub month_name { $_[0]->{locale}->month_format_wide->[ $_[0]->month() - 1] }
 
 sub month_abbr { $_[0]->{locale}->month_format_abbreviated->[ $_[0]->month() - 1] }
 
-sub day_of_month { goto &day };
-sub mday { goto &day };
 sub weekday_of_month { use integer; ( ( $_[0]->day - 1 ) / 7 ) + 1 }
 
 sub quarter_name { $_[0]->{locale}->quarter_format_wide->[ $_[0]->quarter() - 1] }
 sub quarter_abbr { $_[0]->{locale}->quarter_format_abbreviated->[ $_[0]->quarter() - 1] }
 
 sub day_of_week { $_[0]->{local_c}{day_of_week} }
-*wday = \&day_of_week;
-*dow  = \&day_of_week;
 
 sub local_day_of_week
 {
@@ -449,38 +441,25 @@ sub hour_1 { $_[0]->{local_c}{hour} == 0 ? 24 : $_[0]->{local_c}{hour} }
 
 sub hour_12   { my $h = $_[0]->hour % 12; return $h ? $h : 12 }
 
-sub min { goto &minute };
-
-sub sec { goto &second };
-
 sub day_name { $_[0]->{locale}->day_format_wide->[ $_[0]->day_of_week() - 1 ] }
 
 sub day_abbr { $_[0]->{locale}->day_format_abbreviated->[ $_[0]->day_of_week() - 1] }
 
 sub day_of_quarter { $_[0]->{local_c}{day_of_quarter} }
-*doq = \&day_of_quarter;
 
 sub day_of_year { $_[0]->{local_c}{day_of_year} }
-*doy = \&day_of_year;
 
 sub am_or_pm { $_[0]->{locale}->am_pm_abbreviated->[ $_[0]->hour() < 12 ? 0 : 1 ] }
 
 # ISO says that the first week of a year is the first week containing
 # a Thursday.  Extending that says that the first week of the month is
 # the first week containing a Thursday.  ICU agrees.
-#
-# Algorithm supplied by Rick Measham, who doesn't understand how it
-# works.  Neither do I.  Please feel free to explain this to me!
 sub week_of_month
 {
     my $self = shift;
 
-    # Faster than cloning just to get the dow
-    my $first_wday_of_month = ( 8 - ( $self->day - $self->dow ) % 7 ) % 7;
-    $first_wday_of_month = 7 unless $first_wday_of_month;
-
-    my $wom = int( ( $self->day + $first_wday_of_month - 2 ) / 7 );
-    return ( $first_wday_of_month <= 4 ) ? $wom + 1 : $wom;
+    my $thu  = $self->day + 4 - $self->day_of_week;
+    return int( ( $thu + 6 ) / 7 );
 }
 
 sub week
@@ -524,12 +503,13 @@ sub _weeks_in_year
     my $self = shift;
     my $year = shift;
 
-    my $jan_one_dow =
-        ( ( DateTimeX::Lite::Util::ymd2rd( $year, 1, 1 ) + 6 ) % 7 ) + 1;
-    my $dec_31_dow =
-        ( ( DateTimeX::Lite::Util::ymd2rd( $year, 12, 31 ) + 6 ) % 7 ) + 1;
-
-    return $jan_one_dow == 4 || $dec_31_dow == 4 ? 53 : 52;
+    my $dow = DateTimeX::Lite::Util::ymd2rd($year, 1, 1) % 7;
+ 
+    # Tears starting with a Thursday and leap years starting with a Wednesday
+    # have 53 weeks.
+    return ( $dow == 4 || ( $dow == 3 && DateTimeX::Lite::Util::is_leap_year( $year ) ) )
+        ? 53
+        : 52;
 }
 
 sub week_year   { ($_[0]->week)[0] }
@@ -545,7 +525,6 @@ sub ymd
                     $self->{local_c}{month}, $sep,
                     $self->{local_c}{day} );
 }
-sub date { goto &ymd }
 
 sub mdy
 {
@@ -579,11 +558,8 @@ sub hms
                     $self->{local_c}{minute}, $sep,
                     $self->{local_c}{second} );
 }
-# don't want to override CORE::time()
-sub DateTimeX::Lite::time { goto &hms }
 
 sub iso8601 { join 'T', $_[0]->ymd('-'), $_[0]->hms(':') }
-sub datetime { goto &iso8601 }
 
 sub is_leap_year { DateTimeX::Lite::Util::is_leap_year( $_[0]->year ) }
 
@@ -596,7 +572,6 @@ sub time_zone_long_name  { $_[0]->{tz}->name }
 sub time_zone_short_name { $_[0]->{tz}->short_name_for_datetime( $_[0] ) }
 
 sub locale { $_[0]->{locale} }
-sub language { goto &locale }
 
 # This method exists for the benefit of internal methods which create
 # a new object based on the current object, like set() and truncate().
@@ -992,6 +967,11 @@ Similarly, strftime() imposes a lot of code on DateTime. So if ymd(), iso8601() 
 
     use DateTimeX::Lite qw(Strftime);
 
+A lot of methods in original DateTime have aliases. They are not loaded unless
+you ask for them:
+
+    use DateTimeX::Lite qw(Aliases);
+
 Zero-based accessors are also taken out of the core DateTimeX::Lite code.
 
     use DateTimeX::Lite qw(ZeroBase);
@@ -1001,6 +981,11 @@ stringify two DateTimeX::Lite objects using standard operators, you need to
 include Overload:
 
     use DateTimeX::Lite qw(Overload);
+
+And finally, if you want every because you're using pretty much all of
+DateTime.pm but want to migrate, you can do
+
+    use DateTimeX::Lite qw(All);
 
 =item DateTimeX::Lite::TimeZone and DateTimeX::Lite::Locale
 
